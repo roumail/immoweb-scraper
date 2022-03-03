@@ -5,6 +5,8 @@ Created on Mon Aug 30 10:46:18 2021
 @author: U055555
 """
 from selenium import webdriver
+from selenium.webdriver.edge.service import Service
+
 from selenium.common.exceptions import NoSuchElementException
 import pandas as pd
 import re
@@ -35,9 +37,8 @@ def browser_setup(exe_path):
 
 
     # Browser setup
-    profile = webdriver.FirefoxProfile()
-    profile.accept_untrusted_certs = True
-    browser = webdriver.Firefox(firefox_profile=profile, executable_path=exe_path)
+    s = Service(executable_path=exe_path)
+    browser = webdriver.Edge(service=s) # firefox_profile=profile, 
     # Add implicit wait
     browser.implicitly_wait(7)  # seconds
     

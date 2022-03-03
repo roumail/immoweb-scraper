@@ -10,7 +10,7 @@ from time import sleep
 from selenium.common.exceptions import NoSuchElementException
 import datetime
 import pickle
-
+from pathlib import Path
 
 def main(web_page, exe_path, location_a_list, max_price, sort_by="cheapest",max_pages=5):
     browser = browser_setup(exe_path)
@@ -51,13 +51,18 @@ def main(web_page, exe_path, location_a_list, max_price, sort_by="cheapest",max_
 
 if __name__ == "__main__":
     ## PARAMETERS ## 
-    exe_path = r"C:\UCB\learnings\scraping-test\geckodriver.exe"
+    exe_path = Path(r"C:\UCB\personal-development\scraping-test\edgedriver_win64\msedgedriver.exe")
+    assert exe_path.exists()
     sort_by = "cheapest" # newest, postal_code, relevance
+    
     # check online the last page and update...
-    max_pages=25
-    location_a_list = [1030,1040,1050,1060,1150,1180,1190,1200]
-    max_price = 1300
-    web_page = "https://www.immoweb.be/en/search/apartment/for-rent?countries=BE&hasKitchenSetup=true&isAnInvestmentProperty=false&isFurnished=false&maxBedroomCount=4&maxPrice=1400&minBedroomCount=2&minSurface=90&postalCodes=1030,1040,1050,1060,1150,1180,1190,1200&priceType=MONTHLY_RENTAL_PRICE&propertySubtypes=APARTMENT,DUPLEX,PENTHOUSE,TRIPLEX,LOFT&provinces=BRUSSELS&page={}&orderBy={}"
+    max_pages= 25
+    location_a_list = [1030,1040,1050,1150,1180,1200] # 1190, 1060 - Forest and saint gilles dropped.. 
+    max_price = 1500
+    # TODO , create a function to take the parameters and make the query on the fly
+    web_page = "https://www.immoweb.be/en/search/apartment/for-rent?countries=BE&minBedroomCount=2&minSurface=95&postalCodes=1030,1040,1050,1060,1150,1180,1200&maxPrice=1500&page={}&orderBy={}"
+    #web_page = "https://www.immoweb.be/en/search/apartment/for-rent/etterbeek/1040?countries=BE&maxBedroomCount=4&maxPrice=1300&minBedroomCount=2&minSurface=95&page=1&orderBy={}"
+    # web_page = "https://www.immoweb.be/en/search/apartment/for-rent?countries=BE&hasKitchenSetup=true&isAnInvestmentProperty=false&isFurnished=false&maxBedroomCount=4&maxPrice=1400&minBedroomCount=2&minSurface=90&postalCodes=1030,1040,1050,1060,1150,1180,1190,1200&priceType=MONTHLY_RENTAL_PRICE&propertySubtypes=APARTMENT,DUPLEX,PENTHOUSE,TRIPLEX,LOFT&provinces=BRUSSELS&page={}&orderBy={}"
     
     # call
     main(web_page, exe_path, location_a_list, max_price,sort_by, max_pages)
