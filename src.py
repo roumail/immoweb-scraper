@@ -90,7 +90,7 @@ def parse_link_element(element):
         "commune" : commune,
         "num_bedrooms" : num_beds,
         "square_meters" : sqm,
-        "immoweb_code" : ,
+        "immoweb_code" : immo_code ,
         })
     
     return out
