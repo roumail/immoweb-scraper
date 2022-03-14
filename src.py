@@ -79,6 +79,7 @@ def parse_link_element(element):
     space, location = tuple(map(lambda x: x.text, other_info))
     # TODO: add english name of commune, not just code
     commune = int(re.sub(r'[^\d]+', '', location))
+    commune_en = link.split("/")[-3]
     num_beds, sqm = clean_space(space)
     pat = re.compile("https://www.immoweb.be\/(?:.*)(\d{7})\?searchId=(?:.*)+")
     # add immo code
@@ -88,6 +89,7 @@ def parse_link_element(element):
         "link" : link,
         "price" : clean_price(price),
         "commune" : commune,
+        "commune_en" : commune_en,
         "num_bedrooms" : num_beds,
         "square_meters" : sqm,
         "immoweb_code" : immo_code ,
