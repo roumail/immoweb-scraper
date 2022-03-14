@@ -77,12 +77,20 @@ def parse_link_element(element):
     price = element.find_element_by_xpath(".//p[contains(@class,'card--result__price')]").text  
     other_info = element.find_elements_by_xpath(".//div/p")
     space, location = tuple(map(lambda x: x.text, other_info))
+    # TODO: add english name of commune, not just code
+    commune = int(re.sub(r'[^\d]+', '', location))
+    num_beds, sqm = clean_space(space)
+    pat = re.compile("https://www.immoweb.be\/(?:.*)(\d{7})\?searchId=(?:.*)+")
+    # add immo code
+    immo_code = re.findall(pat, link)[0]
     out = pd.Series({
         "build_type" : app_type,
         "link" : link,
         "price" : clean_price(price),
-        "commune" : int(re.sub(r'[^\d]+', '', location)),
-        "space" : clean_space(space),
+        "commune" : commune,
+        "num_bedrooms" : num_beds,
+        "square_meters" : sqm,
+        "immoweb_code" : ,
         })
     
     return out
