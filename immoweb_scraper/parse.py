@@ -1,10 +1,18 @@
 import re
+import typing as tp
 
 import pandas as pd
 from selenium.webdriver.common.by import By
 
+if tp.TYPE_CHECKING:
+    from selenium.webdriver import Chrome as WebDriver
+    from selenium.webdriver.remote.webelement import WebElement
 
-def retrieve_page_links(browser, location_a_list, max_price):
+
+# TODO: move the filtering down
+def retrieve_page_links(
+    browser: "WebDriver", location_a_list: list[int], max_price: float
+) -> pd.Series:
     elements = browser.find_element(
         By.CLASS_NAME, "search-results__list"
     ).find_elements(By.XPATH, "//li[@class='search-results__item']")
@@ -28,7 +36,7 @@ def retrieve_page_links(browser, location_a_list, max_price):
     return rows
 
 
-def parse_link_element(element):
+def parse_link_element(element: "WebElement"):
     link = element.find_element(By.XPATH, ".//h2/a").get_attribute("href")
     app_type = element.find_element(By.XPATH, ".//h2/a").text
     price = element.find_element(
