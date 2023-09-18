@@ -1,3 +1,4 @@
+import os
 import zipfile
 
 import requests
@@ -34,7 +35,7 @@ def download_chromedriver(
     )
     # Download the ChromeDriver zip file
     response = requests.get(chromedriver_url, stream=True)
-    zip_filename = "chromedriver.zip"
+    zip_filename = os.path.join(download_dir, "chromedriver.zip")
     with open(zip_filename, "wb") as file:
         for chunk in response.iter_content(chunk_size=8192):
             file.write(chunk)

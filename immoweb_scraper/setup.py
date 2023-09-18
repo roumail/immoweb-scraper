@@ -4,7 +4,7 @@ from selenium.common.exceptions import NoSuchElementException
 
 def browser_setup():
     options = webdriver.ChromeOptions()
-    options.headless = True
+    options.add_argument("--headless")
     browser = webdriver.Chrome(options=options)
     # exe_path = r"C:\UCB\learnings\scraping-test\geckodriver.exe"
     # # Browser setup
