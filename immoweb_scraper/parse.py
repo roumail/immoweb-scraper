@@ -1,17 +1,18 @@
 import re
 
 import pandas as pd
+from selenium.webdriver.common.by import By
 
 
 def retrieve_page_links(browser, location_a_list, max_price):
-    elements = browser.find_element_by_class_name(
-        "search-results__list"
-    ).find_elements_by_xpath("//li[@class='search-results__item']")
+    elements = browser.find_element(
+        By.CLASS_NAME, "search-results__list"
+    ).find_elements(By.XPATH, "//li[@class='search-results__item']")
 
     rows = []
     for i, element in enumerate(elements):
         # print(f"parsing {i}/{len(elements)}")
-        base = element.find_elements_by_class_name("card--result__body")
+        base = element.find_elements(By.CLASS_NAME, "card--result__body")
         if not base or "Sponsored" in element.text:
             continue
         #  isinstance(base, list) and len(base) == 1
@@ -28,12 +29,12 @@ def retrieve_page_links(browser, location_a_list, max_price):
 
 
 def parse_link_element(element):
-    link = element.find_element_by_xpath(".//h2/a").get_attribute("href")
-    app_type = element.find_element_by_xpath(".//h2/a").text
-    price = element.find_element_by_xpath(
-        ".//p[contains(@class,'card--result__price')]"
+    link = element.find_element(By.XPATH, ".//h2/a").get_attribute("href")
+    app_type = element.find_element(By.XPATH, ".//h2/a").text
+    price = element.find_element(
+        By.XPATH, ".//p[contains(@class,'card--result__price')]"
     ).text
-    other_info = element.find_elements_by_xpath(".//div/p")
+    other_info = element.find_elements(By.XPATH, ".//div/p")
     space, location = tuple(map(lambda x: x.text, other_info))
     out = pd.Series(
         {
