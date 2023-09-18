@@ -1,31 +1,27 @@
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver import Chrome as WebDriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 def browser_setup():
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")
     browser = webdriver.Chrome(options=options)
-    # exe_path = r"C:\UCB\learnings\scraping-test\geckodriver.exe"
-    # # Browser setup
-    # profile = webdriver.FirefoxProfile()
-    # profile.accept_untrusted_certs = True
-    # browser = webdriver.Firefox(firefox_profile=profile, executable_path=exe_path)
-    # # Add implicit wait
-    # browser.implicitly_wait(7)  # seconds
     return browser
 
 
-def page_setup(browser, web_page):
+def page_setup(browser: WebDriver, webpage_url: str):
     # Open webpage
-    browser.get(web_page)
+    browser.get(webpage_url)
 
-    browser.implicitly_wait(4)  # seconds
+    WebDriverWait(browser, 4)
 
     # wait and click privacy.. only the first time browser page opened
     # every other time, we skip this part
     try:
-        browser.find_element_by_xpath("//button[@id='uc-btn-accept-banner']").click()
+        browser.find_element(By.XPATH, "//button[@id='uc-btn-accept-banner']").click()
     except NoSuchElementException:
         pass
     return

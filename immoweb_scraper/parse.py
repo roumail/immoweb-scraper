@@ -9,10 +9,8 @@ if tp.TYPE_CHECKING:
     from selenium.webdriver.remote.webelement import WebElement
 
 
-# TODO: move the filtering down
-def retrieve_page_links(
-    browser: "WebDriver", location_a_list: list[int], max_price: float
-) -> pd.Series:
+def retrieve_page_links(browser: "WebDriver") -> pd.Series:
+    # , location_a_list: list[int], max_price: float
     elements = browser.find_element(
         By.CLASS_NAME, "search-results__list"
     ).find_elements(By.XPATH, "//li[@class='search-results__item']")
@@ -27,12 +25,7 @@ def retrieve_page_links(
         else:
             base = next(iter(base))
             parsed = parse_link_element(base)
-        if any(x > max_price for x in parsed["price"]):
-            continue
-        if parsed["commune"] not in location_a_list:
-            continue
-        else:
-            rows.append(parsed)
+        rows.append(parsed)
     return rows
 
 
