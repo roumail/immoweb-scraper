@@ -17,16 +17,16 @@ RUN apt-get update && apt-get install -y \
     libfontconfig1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Chrome for Selenium
-RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
-    && apt install -y ./google-chrome-stable_current_amd64.deb \
-    && rm google-chrome-stable_current_amd64.deb
+# Install specific version of Chrome for Selenium
+RUN wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/117.0.5938.88/linux64/chrome-linux64.zip \
+    && unzip chrome-linux64.zip -d /usr/bin \
+    && rm chrome-linux64.zip
 
 # Copy only requirements to cache them in docker layer
-COPY pyproject.toml .
+COPY pyproject.toml README.md ./
 
 # Copy all project files into the container
-COPY immoweb_scraper .
+COPY ./immoweb_scraper/ ./immoweb_scraper/
 
 # Copy the scripts directory into the container
 COPY scripts /app/scripts
