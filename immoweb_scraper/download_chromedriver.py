@@ -1,10 +1,25 @@
 import os
+import platform as py_platform
 import zipfile
 
 import requests
 import typer
 
 app = typer.Typer()
+
+
+def get_platform():
+    """Detect the platform and return the appropriate value for ChromeDriver."""
+    system_platform = py_platform.system().lower()
+    if system_platform == "linux":
+        return "linux64"
+    elif system_platform == "darwin":  # macOS
+        if py_platform.machine() == "x86_64":
+            return "mac-x64"
+        else:
+            return "mac-arm64"
+    else:
+        raise ValueError(f"Unsupported platform: {system_platform}")
 
 
 @app.command()
@@ -20,7 +35,7 @@ def download_chromedriver(
     data = response.json()
 
     # Determine the platform (assuming Linux x64 for Docker container)
-    platform = "linux64"
+    platform = get_platform()
 
     # Get the download URL for the ChromeDriver corresponding to the platform and version
     stable_channel = data["channels"]["Stable"]
@@ -43,6 +58,9 @@ def download_chromedriver(
     # Extract the zip file to get the `chromedriver` binary
     with zipfile.ZipFile(zip_filename, "r") as zip_ref:
         zip_ref.extractall(download_dir)
+
+    # Remove the .zip file after extraction
+    os.remove(zip_filename)
 
     print(
         f"ChromeDriver for {platform} (version: {version}) downloaded and extracted successfully!"

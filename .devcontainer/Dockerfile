@@ -10,6 +10,7 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     wget \
+    git \
     unzip \
     libglib2.0-0 \
     libnss3 \
