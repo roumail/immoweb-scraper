@@ -28,16 +28,13 @@ COPY pyproject.toml README.md ./
 # Copy all project files into the container
 COPY ./immoweb_scraper/ ./immoweb_scraper/
 
-# Copy the scripts directory into the container
-COPY scripts /app/scripts
-
 RUN pip install --upgrade pip && \
     pip install poetry && \
     poetry config virtualenvs.create false  && \ 
     poetry install
 
 # Download chromedriver driver
-RUN python /app/scripts/download_chromedriver.py 117.0.5938.88
+RUN ["poetry", "run", "download-chromedriver", "117.0.5938.88"]
 
 # Command to run on container start
 CMD ["poetry", "run", "scrape-immoweb"]

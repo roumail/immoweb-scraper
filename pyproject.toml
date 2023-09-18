@@ -8,6 +8,7 @@ packages = [{include = "immoweb_scraper"}]
 
 [tool.poetry.scripts]
 scrape-immoweb = 'immoweb_scraper.main:app'
+download-chromedriver = 'immoweb_scraper.download_chromedriver:app'
 
 [tool.poetry.dependencies]
 python = "^3.10"

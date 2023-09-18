@@ -1,10 +1,18 @@
-import sys
 import zipfile
 
 import requests
+import typer
+
+app = typer.Typer()
 
 
-def download_chromedriver(version: str):
+@app.command()
+def download_chromedriver(
+    version: str = typer.Argument(..., help="Version of ChromeDriver to download."),
+    download_dir: str = typer.Option(
+        "/usr/bin", help="Directory to download and extract ChromeDriver to."
+    ),
+):
     # Fetch the JSON data from the provided URL
     url = "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json"
     response = requests.get(url)
@@ -14,12 +22,16 @@ def download_chromedriver(version: str):
     platform = "linux64"
 
     # Get the download URL for the ChromeDriver corresponding to the platform and version
+    stable_channel = data["channels"]["Stable"]
+
+    if stable_channel["version"] != version:
+        raise ValueError(f"Version {version} not found in the stable channel.")
+
     chromedriver_url = next(
         entry["url"]
-        for entry in data["channels"][version]["downloads"]["chromedriver"]
+        for entry in stable_channel["downloads"]["chromedriver"]
         if entry["platform"] == platform
     )
-
     # Download the ChromeDriver zip file
     response = requests.get(chromedriver_url, stream=True)
     zip_filename = "chromedriver.zip"
@@ -29,7 +41,7 @@ def download_chromedriver(version: str):
 
     # Extract the zip file to get the `chromedriver` binary
     with zipfile.ZipFile(zip_filename, "r") as zip_ref:
-        zip_ref.extractall("/usr/bin")
+        zip_ref.extractall(download_dir)
 
     print(
         f"ChromeDriver for {platform} (version: {version}) downloaded and extracted successfully!"
@@ -37,9 +49,4 @@ def download_chromedriver(version: str):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python download_chromedriver.py <chrome_version>")
-        sys.exit(1)
-
-    version = sys.argv[1]
-    download_chromedriver(version)
+    app()

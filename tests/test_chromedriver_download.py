@@ -2,7 +2,7 @@
 import os
 import tempfile
 
-from immoweb_scraper.utils import download_chromedriver
+from immoweb_scraper.download_chromedriver import download_chromedriver
 
 
 def test_download_chromedriver():
@@ -12,4 +12,6 @@ def test_download_chromedriver():
         download_chromedriver(version, download_dir=tmpdirname)
 
         # Check if chromedriver binary exists in the temporary directory
-        assert os.path.exists(os.path.join(tmpdirname, "chromedriver"))
+        assert os.path.exists(
+            os.path.join(tmpdirname, "chromedriver-linux64", "chromedriver")
+        )
