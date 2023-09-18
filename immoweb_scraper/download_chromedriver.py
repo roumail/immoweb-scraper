@@ -28,7 +28,7 @@ def download_chromedriver(
     download_dir: str = typer.Option(
         "/usr/bin", help="Directory to download and extract ChromeDriver to."
     ),
-):
+) -> str:
     # Fetch the JSON data from the provided URL
     url = "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json"
     response = requests.get(url)
@@ -65,6 +65,7 @@ def download_chromedriver(
     print(
         f"ChromeDriver for {platform} (version: {version}) downloaded and extracted successfully!"
     )
+    return platform
 
 
 if __name__ == "__main__":
