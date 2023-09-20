@@ -2,31 +2,30 @@ import typing as tp
 
 from loguru import logger
 
-from immoweb_scraper.db.models import PurchasePropertyTable, RentalPropertyTable
+from immoweb_scraper.db.models import Base, PurchasePropertyTable, RentalPropertyTable
 
 if tp.TYPE_CHECKING:
     from immoweb_scraper.db.DBConnection import DBConnection
     from immoweb_scraper.models import PurchaseProperty, RentalProperty
 
 
-def insert_rental_property(db_conn: "DBConnection", data: "RentalProperty"):
-    db_property = RentalPropertyTable(**data.model_dump())
+def insert_properties(
+    db_conn: "DBConnection",
+    properties: list[tp.Union["PurchaseProperty", "RentalProperty"]],
+    table_class: tp.Type[Base],
+):
     with db_conn.session_scope() as session:
-        session.add(db_property)
-
-
-def insert_purchase_property(db_conn: "DBConnection", data: "PurchaseProperty"):
-    db_property = PurchasePropertyTable(**data.model_dump())
-    with db_conn.session_scope() as session:
-        session.add(db_property)
+        for prop in properties:
+            db_property = table_class(**prop.model_dump())
+            session.add(db_property)
 
 
 def add_properties(
     db_conn: "DBConnection",
-    rental_properties: "RentalProperty",
-    purchase_properties: "PurchaseProperty",
+    rental_properties: list["RentalProperty"],
+    purchase_properties: list["PurchaseProperty"],
 ):
     logger.info("Adding rental properties to database")
-    insert_rental_property(db_conn, rental_properties)
+    insert_properties(db_conn, rental_properties, RentalPropertyTable)
     logger.info("Adding purchase properties to database")
-    insert_purchase_property(db_conn, purchase_properties)
+    insert_properties(db_conn, purchase_properties, PurchasePropertyTable)

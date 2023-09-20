@@ -5,3 +5,4 @@ bin/**
 bin/!.gitkeep
 output/**
 output/!.gitkeep
+var/db/
