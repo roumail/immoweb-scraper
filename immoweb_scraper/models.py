@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 
 class BaseProperty(BaseModel):
+    immoweb_identifier: int
     build_type: str
     link: str
     price: int = None
@@ -24,10 +25,11 @@ class PurchaseProperty(BaseProperty):
 def to_property(
     data: pd.Series, property_type: tp.Type[tp.Union[RentalProperty, PurchaseProperty]]
 ) -> tp.Union[RentalProperty, PurchaseProperty]:
-    price, charges = (data["price"] + [None, None])[:2]
-    beds, sq_meters = (data["space"] + [None, None])[:2]
+    price, charges = (data["price"] + (None, None))[:2]
+    beds, sq_meters = (data["space"] + (None, None))[:2]
 
     property_data = {
+        "immoweb_identifier": data["immoweb_identifier"],
         "build_type": data["build_type"],
         "link": data["link"],
         "price": price,

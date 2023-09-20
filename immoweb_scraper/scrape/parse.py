@@ -18,6 +18,7 @@ def parse_link_element(element: "WebElement"):
     space, location = tuple(map(lambda x: x.text, other_info))
     out = pd.Series(
         {
+            "immoweb_identifier": link.split("/")[-1],
             "build_type": app_type,
             "link": link,
             "price": clean_price(price),
@@ -29,14 +30,19 @@ def parse_link_element(element: "WebElement"):
     return out
 
 
-def clean_price(p):
+def clean_price(p) -> tuple[int, int]:
     "Remove , otherwise breaks"
     price = re.sub(",", "", p).split("\n")[0]
     prices = re.findall(r"€(\d{2,4})", price)
-    return list(map(int, prices))
+    prices = tuple(map(int, prices))
+    # Ensure the tuple has exactly two values
+    while len(prices) < 2:
+        prices += (None,)
+
+    return prices[:2]
 
 
-def clean_space(p):
+def clean_space(p) -> tuple[int, int]:
     beds, sq_m = p.split("·")
     beds = re.findall(r"(\d)\sbedrooms", beds)[0]
     sq_m = int(re.sub(r"[^\d]+", "", sq_m))

@@ -1,4 +1,5 @@
 import pandas as pd
+from loguru import logger
 from selenium.webdriver import Chrome as WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -42,5 +43,8 @@ def retrieve_page_links(browser: "WebDriver") -> pd.Series:
         else:
             base = next(iter(base))
             parsed = parse_link_element(base)
+            logger.debug(
+                f"Parsed property number {i + 1} with identifier: {parsed['immoweb_identifier']}"
+            )
         rows.append(parsed)
     return rows
