@@ -84,5 +84,5 @@ def add_properties(
     )
 
     logger.info(
-        f"Total new properties: {len(purchase_properties_added + len(rental_properties_added))}."
+        f"Total new properties: {len(purchase_properties_added) + len(rental_properties_added)}."
     )

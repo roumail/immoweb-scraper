@@ -1,4 +1,5 @@
 import datetime
+import sys
 
 import typer
 from loguru import logger
@@ -19,6 +20,8 @@ app = typer.Typer()
 def main():
     today_date = datetime.datetime.today()
     date_time = today_date.strftime("%Y-%m-%d-%H:%M:%S")
+    logger.remove()
+    logger.add(sys.stderr, level="INFO")
     logger.info(f"Scraping started at {date_time}")
     browser: WebDriver = browser_setup()
     logger.debug("browser setup.")
