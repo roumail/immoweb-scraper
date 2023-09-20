@@ -29,3 +29,10 @@ class PurchasePropertyTable(Base):
     commune = Column(Integer)
     beds = Column(Integer)
     sq_meters = Column(Integer)
+
+
+class BatchState(Base):
+    __tablename__ = "batch_state"
+
+    id = Column(Integer, primary_key=True)
+    code_index = Column(Integer, default=0)

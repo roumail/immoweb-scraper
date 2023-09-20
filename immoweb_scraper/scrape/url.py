@@ -4,8 +4,9 @@ from immoweb_scraper.batcher.constants import POSTAL_CODES
 
 
 class ImmoWebURLBuilder:
-    def __init__(self):
+    def __init__(self, postal_codes: list[int] = POSTAL_CODES):
         self.base_url = "https://www.immoweb.be/en/search/apartment/{}?"
+        self.postal_codes = postal_codes
         self.default_params = {
             "countries": "BE",
             "hasKitchenSetup": "true",
@@ -14,7 +15,7 @@ class ImmoWebURLBuilder:
             "maxBedroomCount": "4",
             "minBedroomCount": "2",
             "minSurface": "90",
-            "postalCodes": ",".join(POSTAL_CODES),
+            "postalCodes": ",".join(postal_codes),
             # "provinces": ",".join(PROVINCES),
             "page": "1",
         }

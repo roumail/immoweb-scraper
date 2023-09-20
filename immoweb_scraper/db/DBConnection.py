@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from immoweb_scraper.db.sqlalchemy import Base
+from immoweb_scraper.db.models import Base
 
 
 class DBConnection:
