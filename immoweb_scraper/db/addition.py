@@ -15,7 +15,7 @@ def insert_properties(
     properties: list[tp.Union["PurchaseProperty", "RentalProperty"]],
     table_class: tp.Type[Base],
 ):
-    # 1. Verify that we only have unique identifiers in the properties list
+    # 1. Filter out duplicates in the properties list
     identifiers_list = [item.immoweb_identifier for item in properties]
     identifier_counts = Counter(identifiers_list)
     duplicates_in_list = {
@@ -23,7 +23,13 @@ def insert_properties(
         for identifier, count in identifier_counts.items()
         if count > 1
     }
-    assert not duplicates_in_list, f"Duplicates found in the list: {duplicates_in_list}"
+    if duplicates_in_list:
+        logger.warning(
+            f"Found duplicates in the list: {duplicates_in_list}. Keeping only one of each."
+        )
+        properties = list(
+            {prop.immoweb_identifier: prop for prop in properties}.values()
+        )
 
     # 2. Check against the database to ensure you're not inserting properties that already exist
     if table_class == RentalPropertyTable:
@@ -37,11 +43,13 @@ def insert_properties(
         for prop in properties
         if prop.immoweb_identifier not in existing_identifiers
     ]
+    # add log for number of properties we're going to add
 
     with db_conn.session_scope() as session:
         for prop in new_properties:
             db_property = table_class(**prop.model_dump())
             session.add(db_property)
+    return new_properties
 
 
 def get_all_rental_properties(db_conn: "DBConnection"):
@@ -60,6 +68,21 @@ def add_properties(
     purchase_properties: list["PurchaseProperty"],
 ):
     logger.info("Adding rental properties to database")
-    insert_properties(db_conn, rental_properties, RentalPropertyTable)
+    rental_properties_added = insert_properties(
+        db_conn, rental_properties, RentalPropertyTable
+    )
+    logger.info(
+        f"Added {len(rental_properties_added)} rental properties to the database."
+    )
+
     logger.info("Adding purchase properties to database")
-    insert_properties(db_conn, purchase_properties, PurchasePropertyTable)
+    purchase_properties_added = insert_properties(
+        db_conn, purchase_properties, PurchasePropertyTable
+    )
+    logger.info(
+        f"Added {len(purchase_properties_added)} purchase properties to the database."
+    )
+
+    logger.info(
+        f"Total new properties: {len(purchase_properties_added + len(rental_properties_added))}."
+    )

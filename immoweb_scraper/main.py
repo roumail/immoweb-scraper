@@ -45,6 +45,7 @@ def main():
     logger.info("Adding to sqlite")
 
     add_properties(db_conn, rental_properties, sale_properties)
+    logger.info("Properties added to tables")
     db_conn.close()
     today_date = datetime.datetime.today()
     date_time = today_date.strftime("%Y-%m-%d-%H:%M:%S")
