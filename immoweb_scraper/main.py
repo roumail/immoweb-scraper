@@ -26,9 +26,11 @@ def main():
     db_conn = DBConnection(path2db=path2db)
     logger.debug("sqlite database connection setup.")
     logger.debug("Initialize batcher to get state where we left off")
-    batcher = PostalCodeBatcher()
-    postal_codes = batcher.get_next_batch()
-    builder = ImmoWebURLBuilder(postal_codes)
+    batcher = PostalCodeBatcher(db_conn)
+    # Ignored currently, will be part of the solution where we run it as part of celery beat
+    postal_codes = batcher.get_next_batch()  # noqa
+    # builder = ImmoWebURLBuilder(postal_codes)
+    builder = ImmoWebURLBuilder()
     logger.info("Scraping rentals properties")
     rent_df = scrape(browser, builder.for_rent)
     rental_properties = [
