@@ -13,13 +13,13 @@ def retrieve_page_links(browser: "WebDriver") -> pd.Series:
     # , location_a_list: list[int], max_price: float
     elements = browser.find_element(
         By.CLASS_NAME, "search-results__list"
-    ).find_elements(By.XPATH, "//li[@class='search-results__item']")
+    ).find_elements(By.XPATH, ".//li[@class='search-results__item']")
 
     rows = []
     for i, element in enumerate(elements):
         # print(f"parsing {i}/{len(elements)}")
         base = element.find_elements(By.CLASS_NAME, "card--result__body")
-        if not base or "Sponsored" in element.text:
+        if not base:
             continue
         #  isinstance(base, list) and len(base) == 1
         else:
@@ -42,8 +42,8 @@ def parse_link_element(element: "WebElement"):
             "build_type": app_type,
             "link": link,
             "price": clean_price(price),
-            "commune": int(re.sub(r"[^\d]+", "", location)),
-            "space": clean_space(space),
+            "commune": int(re.sub(r"[^\d]+", "", location)) if location else location,
+            "space": clean_space(space) if space else space,
         }
     )
 

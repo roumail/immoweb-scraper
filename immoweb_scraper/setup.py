@@ -12,12 +12,9 @@ def browser_setup():
     return browser
 
 
-def page_setup(browser: WebDriver, webpage_url: str):
+def click_accept_banner(browser: WebDriver, webpage_url: str):
     # Open webpage
     browser.get(webpage_url)
-
-    WebDriverWait(browser, 4)
-
     # wait and click privacy.. only the first time browser page opened
     # the button itself has the id "//button[@data-testid='uc-accept-all-button']"
     ok_button = browser.execute_script(

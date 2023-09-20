@@ -1,39 +1,33 @@
 import typing as tp
-from time import sleep
 
+import pandas as pd
 from selenium.common.exceptions import NoSuchElementException
 
 from immoweb_scraper.parse import retrieve_page_links
-from immoweb_scraper.setup import page_setup
-from immoweb_scraper.url import build_url
+from immoweb_scraper.setup import click_accept_banner
 
 if tp.TYPE_CHECKING:
     from selenium.webdriver import Chrome as WebDriver
 
 
-def scrape(browser: "WebDriver"):
-    ## PARAMETERS ##
-    # check online the last page and update...
-    web_page = build_url()
-    page_num = 1
-    url = web_page.format(str(page_num))
-    # Handle the clicking of privacy if needed
-    page_setup(browser, url)
+def scrape(
+    browser: "WebDriver", url_builder_method: tp.Callable[[str], str]
+) -> pd.DataFrame:
     collection = []
     max_pages = 25
-    # location_a_list = [1030,1040,1050,1060,1150,1180,1190,1200]
-    # max_price = 1300
-    for page_i in range(max_pages):
+    for page_i in range(1, max_pages + 1):
+        url = url_builder_method(page=str(page_i))
+        if page_i == 1:
+            # Handle the clicking of privacy if needed
+            click_accept_banner(browser, url)
         # if page_i == 2:
         #     break
         try:
             _info = retrieve_page_links(browser)
             collection.extend(_info)
             # preparation for next page..
-            page_num += 1
-            new_url = web_page.format(str(page_num))
-            sleep(5)
-            page_setup(browser, new_url)
         except NoSuchElementException:
             break
-    return collection
+    breakpoint()
+    df = pd.concat(collection, axis="columns").T
+    return df
