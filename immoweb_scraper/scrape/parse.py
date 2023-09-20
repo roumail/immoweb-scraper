@@ -44,6 +44,7 @@ def clean_price(p) -> tuple[int, int]:
 
 def clean_space(p) -> tuple[int, int]:
     beds, sq_m = p.split("·")
-    beds = re.findall(r"(\d)\sbedrooms", beds)[0]
+    beds_matches = re.findall(r"(\d)\sbedrooms", beds.lower())
+    beds = beds_matches[0] if beds_matches else None
     sq_m = int(re.sub(r"[^\d]+", "", sq_m))
     return beds, sq_m

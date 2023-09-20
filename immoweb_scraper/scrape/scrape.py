@@ -14,7 +14,7 @@ def scrape(
     browser: "WebDriver", url_builder_method: tp.Callable[[str], str]
 ) -> pd.DataFrame:
     collection = []
-    max_pages = 25
+    max_pages = 99
     for page_i in range(1, max_pages + 1):
         logger.debug(f"Scraping page number {page_i}")
         url = url_builder_method(page=str(page_i))
