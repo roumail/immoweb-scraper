@@ -15,16 +15,17 @@ if tp.TYPE_CHECKING:
 class PostalCodeBatcher:
     def __init__(self, db_conn: "DBConnection", batch_size: int = 10):
         self.db_conn = db_conn
+        dictionaries = [
+            brussels_postal_codes,
+            halle_vilvoorde_postal_codes,
+            flemish_brabant_leuven,
+        ]
         # Compute the length of all_postal_codes
-        self.total_postal_codes = sum(len(d) for d in self.dictionaries)
+        self.total_postal_codes = sum(len(d) for d in dictionaries)
         self.all_postal_codes = chain.from_iterable(
             map(
                 lambda d: d.values(),
-                [
-                    brussels_postal_codes,
-                    halle_vilvoorde_postal_codes,
-                    flemish_brabant_leuven,
-                ],
+                dictionaries,
             )
         )
         self.batch_size = batch_size
