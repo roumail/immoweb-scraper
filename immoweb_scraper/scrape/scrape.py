@@ -18,9 +18,8 @@ def scrape(
     for page_i in range(1, max_pages + 1):
         logger.debug(f"Scraping page number {page_i}")
         url = url_builder_method(page=str(page_i))
-        if page_i == 1:
-            # Handle the clicking of privacy if needed
-            click_accept_banner(browser, url)
+        # Handle the clicking of privacy if needed
+        click_accept_banner(browser, url)
         # if page_i == 2:
         #     break
         try:
