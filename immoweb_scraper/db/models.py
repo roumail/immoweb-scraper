@@ -9,7 +9,7 @@ class Base(DeclarativeBase):
 class RentalPropertyTable(Base):
     __tablename__ = "rental_properties"
 
-    id = Column(Integer, primary_key=True)
+    immoweb_identifier = Column(Integer, primary_key=True)
     build_type = Column(String)
     link = Column(String, unique=True)
     price = Column(Float)
@@ -22,7 +22,7 @@ class RentalPropertyTable(Base):
 class PurchasePropertyTable(Base):
     __tablename__ = "purchase_properties"
 
-    id = Column(Integer, primary_key=True)
+    immoweb_identifier = Column(Integer, primary_key=True)
     build_type = Column(String)
     link = Column(String, unique=True)
     price = Column(Float)
@@ -34,5 +34,5 @@ class PurchasePropertyTable(Base):
 class BatchState(Base):
     __tablename__ = "batch_state"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     code_index = Column(Integer, default=0)

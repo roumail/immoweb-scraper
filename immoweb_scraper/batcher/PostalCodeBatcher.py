@@ -30,7 +30,6 @@ class PostalCodeBatcher:
         )
         self.batch_size = batch_size
         self.current_code_index = self._load_state()
-        self.current_index = 0
 
     def _load_state(self):
         with self.db_conn.session_scope() as session:
