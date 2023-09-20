@@ -35,7 +35,6 @@ def retrieve_page_links(browser: "WebDriver") -> pd.Series:
 
     rows = []
     for i, element in enumerate(elements):
-        # print(f"parsing {i}/{len(elements)}")
         base = element.find_elements(By.CLASS_NAME, "card--result__body")
         if not base:
             continue
@@ -44,7 +43,7 @@ def retrieve_page_links(browser: "WebDriver") -> pd.Series:
             base = next(iter(base))
             parsed = parse_link_element(base)
             logger.debug(
-                f"Parsed property number {i + 1} with identifier: {parsed['immoweb_identifier']}"
+                f"Parsed property number {i + 1} on page with identifier: {parsed['immoweb_identifier']}"
             )
         rows.append(parsed)
     return rows

@@ -8,14 +8,14 @@ class BaseProperty(BaseModel):
     immoweb_identifier: int
     build_type: str
     link: str
-    price: int = None
-    commune: int = None
-    beds: int = None
-    sq_meters: int = None
+    price: tp.Optional[int] = None
+    commune: tp.Optional[int] = None
+    beds: tp.Optional[int] = None
+    sq_meters: tp.Optional[int] = None
 
 
 class RentalProperty(BaseProperty):
-    charges: int = None
+    charges: tp.Optional[int] = None
 
 
 class PurchaseProperty(BaseProperty):

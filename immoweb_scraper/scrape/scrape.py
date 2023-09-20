@@ -1,6 +1,7 @@
 import typing as tp
 
 import pandas as pd
+from loguru import logger
 from selenium.common.exceptions import NoSuchElementException
 
 from immoweb_scraper.scrape.locators import click_accept_banner, retrieve_page_links
@@ -15,6 +16,7 @@ def scrape(
     collection = []
     max_pages = 25
     for page_i in range(1, max_pages + 1):
+        logger.debug(f"Scraping page number {page_i}")
         url = url_builder_method(page=str(page_i))
         if page_i == 1:
             # Handle the clicking of privacy if needed
@@ -26,6 +28,7 @@ def scrape(
             collection.extend(_info)
             # preparation for next page..
         except NoSuchElementException:
+            logger.info(f"Stopped at page {page_i}")
             break
     df = pd.concat(collection, axis="columns").T
     return df

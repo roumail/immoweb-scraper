@@ -1,55 +1,46 @@
+import datetime
+
 import typer
+from loguru import logger
+from selenium.webdriver import Chrome as WebDriver
+
+from immoweb_scraper.db.addition import add_properties
+from immoweb_scraper.db.DBConnection import DBConnection
+from immoweb_scraper.models import PurchaseProperty, RentalProperty, to_property
+from immoweb_scraper.scrape.scrape import scrape
+from immoweb_scraper.scrape.url import ImmoWebURLBuilder
+from immoweb_scraper.setup.browser import browser_setup
 
 app = typer.Typer()
 
 
 @app.command()
 def main():
-    # old_main()
-    pass
+    today_date = datetime.datetime.today()
+    date_time = today_date.strftime("%Y-%m-%d-%H:%M:%S")
+    logger.info(f"Scraping started at {date_time}")
+    browser: WebDriver = browser_setup()
+    logger.debug("browser setup.")
+    builder = ImmoWebURLBuilder()
+    logger.info("Scraping rentals properties")
+    rent_df = scrape(browser, builder.for_rent)
+    rental_properties = [
+        to_property(row, RentalProperty) for _, row in rent_df.iterrows()
+    ]
+    # Scrape for sale
+    logger.info("Scraping sale properties")
+    sale_df = scrape(browser, builder.for_sale)
+    sale_properties = [
+        to_property(row, PurchaseProperty) for _, row in sale_df.iterrows()
+    ]
+    logger.info("Adding to sqlite")
+    db_conn = DBConnection(path2db="var/db/properties.sqlite")
+    add_properties(db_conn, rental_properties, sale_properties)
+    db_conn.close()
+    today_date = datetime.datetime.today()
+    date_time = today_date.strftime("%Y-%m-%d-%H:%M:%S")
+    logger.info(f"Script finished at {date_time}")
 
-
-# def old_main(web_page, location_a_list, max_price, sort_by="cheapest",max_pages=5):
-#     exe_path = ""
-#     browser = browser_setup(exe_path)
-#     # initialize link
-#     page_num=1
-#     web_page = "https://www.immoweb.be/en/search/apartment/for-rent?countries=BE&hasKitchenSetup=true&isAnInvestmentProperty=false&isFurnished=false&maxBedroomCount=4&maxPrice=1400&minBedroomCount=2&minSurface=90&postalCodes=1030,1040,1050,1060,1150,1180,1190,1200&priceType=MONTHLY_RENTAL_PRICE&propertySubtypes=APARTMENT,DUPLEX,PENTHOUSE,TRIPLEX,LOFT&provinces=BRUSSELS&page={}&orderBy={}"
-#     ## PARAMETERS ##
-#     sort_by = "cheapest" # newest, postal_code, relevance
-#     # check online the last page and update...
-#     max_pages=25
-#     location_a_list = [1030,1040,1050,1060,1150,1180,1190,1200]
-#     max_price = 1300
-#     url = web_page.format(str(page_num), sort_by)
-#     page_setup(browser,url)
-#     collection = []
-#     for page_i in range(max_pages):
-#         # if page_i == 2:
-#         #     break
-#         try:
-#             _info = retrieve_page_links(browser, location_a_list, max_price)
-#             collection.extend(_info)
-
-#             # preparation for next page..
-#             page_num+=1
-#             new_url= web_page.format(str(page_num), sort_by)
-#             sleep(5)
-#             page_setup(browser, new_url)
-#         except NoSuchElementException:
-#             break
-
-#     today_date = datetime.date.today()
-#     date_time = datetime.datetime.strftime(today_date, '%Y_%m_%d')
-
-#     with open(f"{date_time}_pickle.pkl","wb") as f:
-#         pickle.dump(collection, f)
-
-#     df = pd.concat(collection, axis="columns").T
-
-#     df.to_csv(f"{date_time}_output.csv",index=False)
-
-#     return df
 
 if __name__ == "__main__":
     app()

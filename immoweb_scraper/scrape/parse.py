@@ -22,8 +22,8 @@ def parse_link_element(element: "WebElement"):
             "build_type": app_type,
             "link": link,
             "price": clean_price(price),
-            "commune": int(re.sub(r"[^\d]+", "", location)) if location else location,
-            "space": clean_space(space) if space else space,
+            "commune": int(re.sub(r"[^\d]+", "", location)) if location else None,
+            "space": clean_space(space) if space else tuple([None, None]),
         }
     )
 
