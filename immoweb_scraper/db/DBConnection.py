@@ -9,7 +9,7 @@ from immoweb_scraper.db.sqlalchemy import Base
 class DBConnection:
     def __init__(self, path2db):
         self.path2db = path2db
-        connection_string = f"sqlite://{self.path2db}"
+        connection_string = f"sqlite:///{self.path2db}"
         self.engine = create_engine(connection_string)
         Session = sessionmaker(bind=self.engine)
         Base.metadata.create_all(self.engine)

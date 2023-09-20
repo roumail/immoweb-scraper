@@ -1,6 +1,6 @@
 from urllib.parse import urlencode
 
-from immoweb_scraper.constants import POSTAL_CODES, PROVINCES
+from immoweb_scraper.batcher.constants import POSTAL_CODES
 
 
 class ImmoWebURLBuilder:
@@ -15,7 +15,7 @@ class ImmoWebURLBuilder:
             "minBedroomCount": "2",
             "minSurface": "90",
             "postalCodes": ",".join(POSTAL_CODES),
-            "provinces": ",".join(PROVINCES),
+            # "provinces": ",".join(PROVINCES),
             "page": "1",
         }
 
