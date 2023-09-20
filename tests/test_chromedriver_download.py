@@ -1,7 +1,7 @@
 import os
 import tempfile
 
-from immoweb_scraper.download_chromedriver import download_chromedriver
+from immoweb_scraper.setup.download_chromedriver import download_chromedriver
 
 
 def test_download_chromedriver():

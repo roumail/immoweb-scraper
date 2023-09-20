@@ -3,8 +3,7 @@ import typing as tp
 import pandas as pd
 from selenium.common.exceptions import NoSuchElementException
 
-from immoweb_scraper.parse import retrieve_page_links
-from immoweb_scraper.setup import click_accept_banner
+from immoweb_scraper.scrape.locators import click_accept_banner, retrieve_page_links
 
 if tp.TYPE_CHECKING:
     from selenium.webdriver import Chrome as WebDriver
@@ -28,6 +27,5 @@ def scrape(
             # preparation for next page..
         except NoSuchElementException:
             break
-    breakpoint()
     df = pd.concat(collection, axis="columns").T
     return df

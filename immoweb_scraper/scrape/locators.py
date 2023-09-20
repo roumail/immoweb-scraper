@@ -1,15 +1,10 @@
-from selenium import webdriver
+import pandas as pd
 from selenium.webdriver import Chrome as WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-
-def browser_setup():
-    options = webdriver.ChromeOptions()
-    # options.add_argument("--headless")
-    browser = webdriver.Chrome(options=options)
-    return browser
+from immoweb_scraper.scrape.parse import parse_link_element
 
 
 def click_accept_banner(browser: WebDriver, webpage_url: str):
@@ -29,3 +24,23 @@ def click_accept_banner(browser: WebDriver, webpage_url: str):
         EC.visibility_of_element_located((By.CSS_SELECTOR, "#usercentrics-root"))
     )
     return
+
+
+def retrieve_page_links(browser: "WebDriver") -> pd.Series:
+    # , location_a_list: list[int], max_price: float
+    elements = browser.find_element(
+        By.CLASS_NAME, "search-results__list"
+    ).find_elements(By.XPATH, ".//li[@class='search-results__item']")
+
+    rows = []
+    for i, element in enumerate(elements):
+        # print(f"parsing {i}/{len(elements)}")
+        base = element.find_elements(By.CLASS_NAME, "card--result__body")
+        if not base:
+            continue
+        #  isinstance(base, list) and len(base) == 1
+        else:
+            base = next(iter(base))
+            parsed = parse_link_element(base)
+        rows.append(parsed)
+    return rows

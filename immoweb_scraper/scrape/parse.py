@@ -5,28 +5,7 @@ import pandas as pd
 from selenium.webdriver.common.by import By
 
 if tp.TYPE_CHECKING:
-    from selenium.webdriver import Chrome as WebDriver
     from selenium.webdriver.remote.webelement import WebElement
-
-
-def retrieve_page_links(browser: "WebDriver") -> pd.Series:
-    # , location_a_list: list[int], max_price: float
-    elements = browser.find_element(
-        By.CLASS_NAME, "search-results__list"
-    ).find_elements(By.XPATH, ".//li[@class='search-results__item']")
-
-    rows = []
-    for i, element in enumerate(elements):
-        # print(f"parsing {i}/{len(elements)}")
-        base = element.find_elements(By.CLASS_NAME, "card--result__body")
-        if not base:
-            continue
-        #  isinstance(base, list) and len(base) == 1
-        else:
-            base = next(iter(base))
-            parsed = parse_link_element(base)
-        rows.append(parsed)
-    return rows
 
 
 def parse_link_element(element: "WebElement"):
