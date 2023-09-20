@@ -15,6 +15,8 @@ if tp.TYPE_CHECKING:
 class PostalCodeBatcher:
     def __init__(self, db_conn: "DBConnection", batch_size: int = 10):
         self.db_conn = db_conn
+        # Compute the length of all_postal_codes
+        self.total_postal_codes = sum(len(d) for d in self.dictionaries)
         self.all_postal_codes = chain.from_iterable(
             map(
                 lambda d: d.values(),
@@ -41,8 +43,8 @@ class PostalCodeBatcher:
         with self.db_conn.session_scope() as session:
             state = session.query(BatchState).first()
             if state:
-                state.code_index = code_index % len(
-                    self.all_postal_codes
+                state.code_index = (
+                    code_index % self.total_postal_codes
                 )  # Wrap around if exceeds total postal codes
             else:
                 new_state = BatchState(code_index=code_index)
