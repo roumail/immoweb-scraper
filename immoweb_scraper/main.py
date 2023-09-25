@@ -4,7 +4,6 @@ import sys
 import typer
 from loguru import logger
 from prefect import flow, task
-from prefect.server.schemas.schedules import IntervalSchedule
 from selenium.webdriver import Chrome as WebDriver
 
 from immoweb_scraper.batcher.BatchStateHandler import BatchStateHandler
@@ -97,16 +96,6 @@ def run_flow():
     """Run the scraping flow."""
     # Execute the flow
     scrape_immoweb_flow()
-
-
-@app.command()
-def register_flow():
-    """Register the flow with Prefect server."""
-    scrape_immoweb_flow.serve(
-        name="my-first-deployment",
-        tags=["onboarding"],
-        schedule=IntervalSchedule(interval=14400, timezone="Europe/Berlin"),  # 4 hours
-    )
 
 
 if __name__ == "__main__":
