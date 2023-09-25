@@ -59,14 +59,12 @@ def test_get_next_batch(batcher: PostalCodeBatcher):
         ["1040", "1790"],
         ["1652", "1730"],
         ["3200", "3460"],
-        ["3130"],
+        ["3130", "1000"],
     ]
 
     # Call get_next_batch and verify the output
-    for expected_batch in expected_batches:
+    for i, expected_batch in enumerate(expected_batches):
+        if i > len(expected_batches):
+            break
         batches = batcher.get_next_batch()
         assert batches == expected_batch
-
-    # Verify that it raises StopIteration after all batches are exhausted
-    with pytest.raises(StopIteration):
-        batcher.get_next_batch()

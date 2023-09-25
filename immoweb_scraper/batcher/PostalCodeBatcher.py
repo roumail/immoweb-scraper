@@ -1,5 +1,5 @@
 import typing as tp
-from itertools import chain, cycle, islice
+from itertools import chain
 
 if tp.TYPE_CHECKING:
     from immoweb_scraper.batcher.BatchStateHandler import BatchStateHandler
@@ -25,43 +25,64 @@ class PostalCodeBatcher:
                 halle_vilvoorde_postal_codes,
                 flemish_brabant_leuven,
             ]
+            self.dictionaries = dictionaries
+        else:
+            self.dictionaries = dictionaries
         # Compute the length of all_postal_codes
-        self.total_postal_codes = sum(len(d) for d in dictionaries)
-        self.all_postal_codes = chain.from_iterable(
-            map(
-                lambda d: d.values(),
-                dictionaries,
-            )
-        )
+        self.total_postal_codes = sum(len(d) for d in self.dictionaries)
+        self.postal_codes_gen = None  # Initialize the generator as None
         self.batch_size = batch_size
         self.current_code_index = self.state_handler.load_state()
 
-    def postal_code_batches(self):
-        infinite_postal_codes = cycle(self.all_postal_codes)
+    def get_all_postal_codes(self):
+        if self.postal_codes_gen is None:
+            self.postal_codes_gen = self._create_postal_codes_gen()
+        return self.postal_codes_gen
 
-        # Start iterating from the last saved position
-        sliced_postal_codes = islice(
-            infinite_postal_codes, self.current_code_index, None
+    def _create_postal_codes_gen(self):
+        return chain.from_iterable(
+            map(
+                lambda d: d.values(),
+                self.dictionaries,
+            )
         )
 
+    def postal_code_iterator(self, start_index):
+        current_index = start_index
+        while True:
+            try:
+                code = next(self.get_all_postal_codes())
+                yield code
+                current_index += 1
+                if current_index >= self.total_postal_codes:
+                    current_index = 0
+            except StopIteration:
+                self.postal_codes_gen = None  # Reset the generator
+
+    def postal_code_batches(self):
+        code_iter = self.postal_code_iterator(self.current_code_index)
         current_batch = []
-        for code in sliced_postal_codes:
+        batches_yielded = 0
+
+        for code in code_iter:
             current_batch.append(code)
+
             if len(current_batch) == self.batch_size:
-                self.state_handler.save_state(
-                    self.current_code_index + self.batch_size,
-                    total_postal_codes=self.total_postal_codes,
-                )
+                # Increment the current_code_index by batch size
+                self.current_code_index += self.batch_size
+
+                # Wrap the index if it exceeds total postal codes
+                wrapped_index = self.current_code_index % self.total_postal_codes
+                print(f"wrapped_index: {wrapped_index}")
+                self.state_handler.save_state(wrapped_index)
+
                 yield current_batch
                 current_batch = []
+                batches_yielded += 1
 
-        # If there are any remaining postal codes in the last batch
-        if current_batch:
-            self.state_handler.save_state(
-                self.current_code_index + len(current_batch),
-                total_postal_codes=self.total_postal_codes,
-            )
-            yield current_batch
+                # Termination condition: If we've yielded all batches, break the loop
+                if batches_yielded * self.batch_size >= self.total_postal_codes:
+                    break
 
     def get_next_batch(self) -> list[str]:
         return list(map(str, next(self.postal_code_batches())))

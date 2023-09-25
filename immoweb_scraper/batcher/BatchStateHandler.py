@@ -15,13 +15,11 @@ class BatchStateHandler:
             state = session.query(BatchState).first()
         return state.code_index if state else 0
 
-    def save_state(self, code_index, total_postal_codes):
+    def save_state(self, code_index):
         with self.db_conn.session_scope() as session:
             state = session.query(BatchState).first()
             if state:
-                state.code_index = (
-                    code_index % total_postal_codes
-                )  # Wrap around if exceeds total postal codes
+                state.code_index = code_index
             else:
                 new_state = BatchState(code_index=code_index)
                 session.add(new_state)
