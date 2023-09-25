@@ -12,11 +12,11 @@ build: null
 # push section allows you to manage if and how this project is uploaded to remote locations
 push: null
 
-# pull section allows you to provide instructions for cloning this project in remote locations
-pull:
-- prefect.deployments.steps.git_clone:
-    repository: git@github.com:roumail/immoweb-scraper.git
-    branch: improve
+# # pull section allows you to provide instructions for cloning this project in remote locations
+# pull:
+# - prefect.deployments.steps.git_clone:
+#     repository: git@github.com:roumail/immoweb-scraper.git
+#     branch: improve
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
@@ -28,9 +28,9 @@ deployments:
   parameters: {}
   work_pool:
     name: above-ground
-    work_queue_name: null
+    work_queue_name: default
     job_variables: {}
   schedule:
     interval: 14400.0
     anchor_date: '2023-09-25T14:47:25.074831+00:00'
-    timezone: UTC
+    timezone: "Europe/Berlin"
