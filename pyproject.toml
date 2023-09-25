@@ -28,6 +28,7 @@ flake8 = "^6.1.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.2"
+pytest-mock = "^3.11.1"
 
 [build-system]
 requires = ["poetry-core"]

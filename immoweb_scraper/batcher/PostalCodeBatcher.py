@@ -48,13 +48,19 @@ class PostalCodeBatcher:
         for code in sliced_postal_codes:
             current_batch.append(code)
             if len(current_batch) == self.batch_size:
-                self.state_handler.save_state(self.current_code_index + self.batch_size)
+                self.state_handler.save_state(
+                    self.current_code_index + self.batch_size,
+                    total_postal_codes=self.total_postal_codes,
+                )
                 yield current_batch
                 current_batch = []
 
         # If there are any remaining postal codes in the last batch
         if current_batch:
-            self.state_handler.save_state(self.current_code_index + len(current_batch))
+            self.state_handler.save_state(
+                self.current_code_index + len(current_batch),
+                total_postal_codes=self.total_postal_codes,
+            )
             yield current_batch
 
     def get_next_batch(self) -> list[str]:

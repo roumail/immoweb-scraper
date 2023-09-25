@@ -3,7 +3,7 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver import Chrome as WebDriver
 from selenium.webdriver.common.by import By
 
-from immoweb_scraper.setup import browser_setup
+from immoweb_scraper.setup.browser import browser_setup
 
 
 def test_browser_setup_google_search():
