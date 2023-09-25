@@ -1,25 +1,30 @@
 import typing as tp
 from itertools import chain, cycle, islice
 
-from immoweb_scraper.batcher.constants import (
-    brussels_postal_codes,
-    flemish_brabant_leuven,
-    halle_vilvoorde_postal_codes,
-)
-from immoweb_scraper.db.models import BatchState
-
 if tp.TYPE_CHECKING:
-    from immoweb_scraper.db.DBConnection import DBConnection
+    from immoweb_scraper.batcher.BatchStateHandler import BatchStateHandler
 
 
 class PostalCodeBatcher:
-    def __init__(self, db_conn: "DBConnection", batch_size: int = 10):
-        self.db_conn = db_conn
-        dictionaries = [
-            brussels_postal_codes,
-            halle_vilvoorde_postal_codes,
-            flemish_brabant_leuven,
-        ]
+    def __init__(
+        self,
+        state_handler: "BatchStateHandler",
+        batch_size: tp.Optional[int] = 10,
+        dictionaries: tp.Optional[list[dict[str, int]]] = None,
+    ):
+        self.state_handler = state_handler
+        if dictionaries is None:
+            from immoweb_scraper.batcher.constants import (
+                brussels_postal_codes,
+                flemish_brabant_leuven,
+                halle_vilvoorde_postal_codes,
+            )
+
+            dictionaries = [
+                brussels_postal_codes,
+                halle_vilvoorde_postal_codes,
+                flemish_brabant_leuven,
+            ]
         # Compute the length of all_postal_codes
         self.total_postal_codes = sum(len(d) for d in dictionaries)
         self.all_postal_codes = chain.from_iterable(
@@ -29,26 +34,7 @@ class PostalCodeBatcher:
             )
         )
         self.batch_size = batch_size
-        self.current_code_index = self._load_state()
-
-    def _load_state(self):
-        with self.db_conn.session_scope() as session:
-            state = session.query(BatchState).first()
-        if state:
-            return state.code_index
-        else:
-            return 0
-
-    def _save_state(self, code_index):
-        with self.db_conn.session_scope() as session:
-            state = session.query(BatchState).first()
-            if state:
-                state.code_index = (
-                    code_index % self.total_postal_codes
-                )  # Wrap around if exceeds total postal codes
-            else:
-                new_state = BatchState(code_index=code_index)
-                session.add(new_state)
+        self.current_code_index = self.state_handler.load_state()
 
     def postal_code_batches(self):
         infinite_postal_codes = cycle(self.all_postal_codes)
@@ -62,13 +48,13 @@ class PostalCodeBatcher:
         for code in sliced_postal_codes:
             current_batch.append(code)
             if len(current_batch) == self.batch_size:
-                self._save_state(self.current_code_index + self.batch_size)
+                self.state_handler.save_state(self.current_code_index + self.batch_size)
                 yield current_batch
                 current_batch = []
 
         # If there are any remaining postal codes in the last batch
         if current_batch:
-            self._save_state(self.current_code_index + len(current_batch))
+            self.state_handler.save_state(self.current_code_index + len(current_batch))
             yield current_batch
 
     def get_next_batch(self) -> list[str]:
