@@ -3,6 +3,8 @@ import sys
 
 import typer
 from loguru import logger
+from prefect import flow, task
+from prefect.server.schemas.schedules import IntervalSchedule
 from selenium.webdriver import Chrome as WebDriver
 
 from immoweb_scraper.batcher.PostalCodeBatcher import PostalCodeBatcher
@@ -16,39 +18,72 @@ from immoweb_scraper.setup.browser import browser_setup
 app = typer.Typer()
 
 
-@app.command()
-def main():
-    today_date = datetime.datetime.today()
-    date_time = today_date.strftime("%Y-%m-%d-%H:%M:%S")
+@task
+def setup():
+    # setup logger
     logger.remove()
     logger.add(sys.stderr, level="INFO")
+    today_date = datetime.datetime.today()
+    date_time = today_date.strftime("%Y-%m-%d-%H:%M:%S")
     logger.info(f"Scraping started at {date_time}")
+    # browser setup
     browser: WebDriver = browser_setup()
     logger.debug("browser setup.")
+
+    # setup database
     path2db = "var/db/properties.sqlite"
     db_conn = DBConnection(path2db=path2db)
     logger.debug("sqlite database connection setup.")
-    logger.debug("Initialize batcher to get state where we left off")
+    return browser, db_conn
+
+
+@task
+def get_postal_codes(db_conn):
     batcher = PostalCodeBatcher(db_conn)
-    # Ignored currently, will be part of the solution where we run it as part of celery beat
-    postal_codes = batcher.get_next_batch()  # noqa
-    # builder = ImmoWebURLBuilder(postal_codes)
-    builder = ImmoWebURLBuilder()
+    return batcher.get_next_batch()
+
+
+@task
+def scrape_rentals(browser, postal_codes):
     logger.info("Scraping rentals properties")
-    rent_df = scrape(browser, builder.for_rent)
+    builder = ImmoWebURLBuilder(postal_codes)
+    df = scrape(browser, builder.for_rent)
+    logger.info("Scraping completed")
+    return df
+
+
+@task
+def scrape_sales(browser, postal_codes):
+    logger.info("Scraping sale properties")
+    builder = ImmoWebURLBuilder(postal_codes)
+    df = scrape(browser, builder.for_sale)
+    logger.info("Scraping completed ")
+    return df
+
+
+@task
+def add_to_db(rent_df, sale_df, db_conn):
     rental_properties = [
         to_property(row, RentalProperty) for _, row in rent_df.iterrows()
     ]
-    # Scrape for sale
-    logger.info("Scraping sale properties")
-    sale_df = scrape(browser, builder.for_sale)
     sale_properties = [
         to_property(row, PurchaseProperty) for _, row in sale_df.iterrows()
     ]
     logger.info("Adding to sqlite")
-
     add_properties(db_conn, rental_properties, sale_properties)
     logger.info("Properties added to tables")
+
+
+@app.command()
+@flow()
+def main():
+    browser, db_conn = setup()
+    logger.debug("Initialize batcher to get state where we left off")
+    batcher = PostalCodeBatcher(db_conn)
+    postal_codes = batcher.get_next_batch()
+    rent_df = scrape_rentals(browser, postal_codes)
+    sale_df = scrape_sales(browser, postal_codes)
+    add_to_db(rent_df, sale_df, db_conn)
     db_conn.close()
     today_date = datetime.datetime.today()
     date_time = today_date.strftime("%Y-%m-%d-%H:%M:%S")
@@ -56,4 +91,10 @@ def main():
 
 
 if __name__ == "__main__":
-    app()
+    # Register the flow with Prefect server
+    # app()
+    main.serve(
+        name="my-first-deployment",
+        tags=["onboarding"],
+        schedule=IntervalSchedule(interval=14400, timezone="Europe/Berlin"),  # 4 hours
+    )
