@@ -6,3 +6,5 @@ bin/!.gitkeep
 output/**
 output/!.gitkeep
 var/db/
+
+prefect_*.log
