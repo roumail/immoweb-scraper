@@ -47,7 +47,7 @@ def insert_properties(
 
     with db_conn.session_scope() as session:
         for prop in new_properties:
-            db_property = table_class(**prop.model_dump())
+            db_property = table_class(**prop.dict())
             session.add(db_property)
     return new_properties
 
