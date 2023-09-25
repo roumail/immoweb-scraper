@@ -7,6 +7,7 @@ from prefect import flow, task
 from prefect.server.schemas.schedules import IntervalSchedule
 from selenium.webdriver import Chrome as WebDriver
 
+from immoweb_scraper.batcher.BatchStateHandler import BatchStateHandler
 from immoweb_scraper.batcher.PostalCodeBatcher import PostalCodeBatcher
 from immoweb_scraper.db.addition import add_properties
 from immoweb_scraper.db.DBConnection import DBConnection
@@ -38,9 +39,11 @@ def setup():
 
 
 @task
-def get_postal_codes(db_conn):
-    batcher = PostalCodeBatcher(db_conn)
-    return batcher.get_next_batch()
+def get_postal_codes(batch_state):
+    batcher = PostalCodeBatcher(batch_state)
+    batches = batcher.get_next_batch()
+    logger.info(f"Scraping for the following post codes: {','.join(batches)}")
+    return batches
 
 
 @task
@@ -74,13 +77,12 @@ def add_to_db(rent_df, sale_df, db_conn):
     logger.info("Properties added to tables")
 
 
-@app.command()
-@flow()
-def main():
+@flow(name="Immoweb Scraper")
+def scrape_immoweb_flow():
     browser, db_conn = setup()
     logger.debug("Initialize batcher to get state where we left off")
-    batcher = PostalCodeBatcher(db_conn)
-    postal_codes = batcher.get_next_batch()
+    batch_state = BatchStateHandler(db_conn)
+    postal_codes = get_postal_codes(batch_state)
     rent_df = scrape_rentals(browser, postal_codes)
     sale_df = scrape_sales(browser, postal_codes)
     add_to_db(rent_df, sale_df, db_conn)
@@ -90,11 +92,22 @@ def main():
     logger.info(f"Script finished at {date_time}")
 
 
-if __name__ == "__main__":
-    # Register the flow with Prefect server
-    # app()
-    main.serve(
+@app.command()
+def run_flow():
+    """Run the scraping flow."""
+    # Execute the flow
+    scrape_immoweb_flow()
+
+
+@app.command()
+def register_flow():
+    """Register the flow with Prefect server."""
+    scrape_immoweb_flow.serve(
         name="my-first-deployment",
         tags=["onboarding"],
         schedule=IntervalSchedule(interval=14400, timezone="Europe/Berlin"),  # 4 hours
     )
+
+
+if __name__ == "__main__":
+    app()
