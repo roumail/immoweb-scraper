@@ -1,0 +1,46 @@
+###
+### A complete description of a Prefect Deployment for flow 'Immoweb Scraper'
+###
+name: my-first-deployment
+description: null
+version: e0a1e8bf04f4624bec6862f1ca081238
+# The work queue that will handle this deployment's runs
+work_queue_name: default
+work_pool_name: above-ground
+tags:
+- onboarding
+parameters: {}
+schedule:
+  interval: 14400.0
+  anchor_date: '2023-09-25T14:47:25.074831+00:00'
+  timezone: Europe/Berlin
+is_schedule_active: true
+infra_overrides: {}
+infrastructure:
+  type: process
+  env: {}
+  labels: {}
+  name: null
+  command: null
+  stream_output: true
+  working_dir: null
+  block_type_slug: process
+  _block_type_slug: process
+
+###
+### DO NOT EDIT BELOW THIS LINE
+###
+flow_name: Immoweb Scraper
+manifest_path: null
+storage: null
+path: /Users/rohailtaimour/home/1_Projects/immoweb-scraper
+entrypoint: immoweb_scraper/main.py:scrape_immoweb_flow
+parameter_openapi_schema:
+  title: Parameters
+  type: object
+  properties: {}
+  required: null
+  definitions: null
+timestamp: '2023-09-25T15:18:05.036760+00:00'
+triggers: []
+enforce_parameter_schema: null
