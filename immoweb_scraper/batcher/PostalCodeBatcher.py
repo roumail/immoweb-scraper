@@ -73,7 +73,6 @@ class PostalCodeBatcher:
 
                 # Wrap the index if it exceeds total postal codes
                 wrapped_index = self.current_code_index % self.total_postal_codes
-                print(f"wrapped_index: {wrapped_index}")
                 self.state_handler.save_state(wrapped_index)
 
                 yield current_batch

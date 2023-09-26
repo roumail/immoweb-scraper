@@ -35,6 +35,7 @@ def setup():
     return browser, db_conn, logger
 
 
+# TODO: if failure, we don't want to save the state and rollback so that the postal codes where it fails are tried again
 @task
 def get_postal_codes(batch_state):
     batcher = PostalCodeBatcher(batch_state)
