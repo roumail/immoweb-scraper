@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 class BaseProperty(BaseModel):
     immoweb_identifier: int
+    collection_date: str
     build_type: str
     link: str
     price: tp.Optional[int] = None
@@ -30,6 +31,7 @@ def to_property(
 
     property_data = {
         "immoweb_identifier": data["immoweb_identifier"],
+        "collection_date": data["collection_date"],
         "build_type": data["build_type"],
         "link": data["link"],
         "price": price,
