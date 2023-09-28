@@ -52,7 +52,9 @@ def scrape_immoweb_flow():
     logger.debug("Initialize batcher to get state where we left off")
     batch_state = BatchStateHandler(db_conn)
     initial_index = batch_state.load_state()
+    logger.info(f"Starting index: {initial_index}")
     postal_codes, new_index = get_postal_codes(initial_index)
+    logger.info(f"New index: {new_index}")
     logger.info(f"Scraping for the following post codes: {','.join(postal_codes)}")
     success_flag = False
     try:
