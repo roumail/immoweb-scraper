@@ -35,12 +35,12 @@ def setup():
     return browser, db_conn, logger
 
 
-# TODO: if failure, we don't want to save the state and rollback so that the postal codes where it fails are tried again
 @task
-def get_postal_codes(batch_state):
-    batcher = PostalCodeBatcher(batch_state)
+def get_postal_codes(initial_index) -> tuple[list[str], int]:
+    batcher = PostalCodeBatcher(initial_index)
     batches = batcher.get_next_batch()
-    return batches
+    new_index = batcher.get_current_index()
+    return batches, new_index
 
 
 @task
@@ -79,7 +79,8 @@ def scrape_immoweb_flow():
     browser, db_conn, logger = setup()
     logger.debug("Initialize batcher to get state where we left off")
     batch_state = BatchStateHandler(db_conn)
-    postal_codes = get_postal_codes(batch_state)
+    initial_index = batch_state.load_state()
+    postal_codes, new_index = get_postal_codes(initial_index)
     logger.info(f"Scraping for the following post codes: {','.join(postal_codes)}")
     logger.info("Scraping rentals properties")
     rent_df = scrape_rentals(browser, postal_codes)
@@ -89,9 +90,12 @@ def scrape_immoweb_flow():
     logger.info("Scraping completed")
     today_date = datetime.datetime.today()
     date_time = today_date.strftime("%Y-%m-%d-%H:%M:%S")
-    # add date to the schema for tracking when data was collected - at least the date
     logger.info("Adding to sqlite")
+    # Adding properties to database
     add_to_db(rent_df, sale_df, db_conn, today_date)
+    # Add the current index to the batch_state
+    batch_state.save_state(new_index)
+    # update batch_state table
     logger.info("Properties added to tables")
     db_conn.close()
     logger.info(f"Script finished at {date_time}")
