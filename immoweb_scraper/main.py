@@ -61,7 +61,6 @@ def scrape_immoweb_flow():
         rent_df = scrape(builder.for_rent)
         logger.info("Scraping completed")
         logger.info("Scraping sale properties")
-        breakpoint()
         sale_df = scrape(builder.for_sale)
         logger.info("Scraping completed")
         date_time = get_current_time_str()
