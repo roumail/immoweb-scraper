@@ -10,6 +10,7 @@ class RentalPropertyTable(Base):
     __tablename__ = "rental_properties"
 
     immoweb_identifier = Column(Integer, primary_key=True)
+    collection_date = Column(String)
     build_type = Column(String)
     link = Column(String, unique=True)
     price = Column(Float)
@@ -23,6 +24,7 @@ class PurchasePropertyTable(Base):
     __tablename__ = "purchase_properties"
 
     immoweb_identifier = Column(Integer, primary_key=True)
+    collection_date = Column(String)
     build_type = Column(String)
     link = Column(String, unique=True)
     price = Column(Float)
