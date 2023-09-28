@@ -27,7 +27,7 @@ def get_postal_codes(initial_index) -> tuple[list[str], int]:
 @task
 def add_to_db(rent_df: pd.DataFrame, sale_df: pd.DataFrame, db_conn, today_date: str):
     # add today date to both dataframes
-    current_time_dt = datetime.strptime(today_date, "%Y-%m-%d-%H:%M:%S")
+    current_time_dt = datetime.datetime.strptime(today_date, "%Y-%m-%d-%H:%M:%S")
     today = current_time_dt.strftime("%Y-%m-%d")
     rent_df.loc[:, "collection_date"] = today
     sale_df.loc[:, "collection_date"] = today
