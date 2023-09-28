@@ -8,6 +8,6 @@ We use a python package to separate components for separating concerns into data
 
 ## Usage
 After installing the package using your favourite, you can run the package entrypoint `scrape-immoweb`.  
-This script sets up the browser, initializes the database, and starts the scraping process.
+This script initializes the database, and starts the scraping process.
 
 

@@ -5,11 +5,12 @@ import typing as tp
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+from bs4.element import Tag
 from loguru import logger
 from prefect import task
 
 
-def parse_card_element(card):
+def parse_card_element(card: Tag) -> pd.Series:
     link = card.find("h2").find("a")["href"]
     app_type = card.find("h2", {"class": "card__title"}).text.strip()
     price_json_str = card.find("p", {"class": "card--result__price"}).find("iw-price")[
@@ -58,7 +59,7 @@ def parse_card_element(card):
         "commune": commune,
         "space": space,
     }
-    return out
+    return pd.Series(out)
 
 
 @task

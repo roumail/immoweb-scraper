@@ -11,22 +11,9 @@ from immoweb_scraper.db.DBConnection import DBConnection
 from immoweb_scraper.models import PurchaseProperty, RentalProperty, to_property
 from immoweb_scraper.scrape.scrape import scrape
 from immoweb_scraper.scrape.url import ImmoWebURLBuilder
+from immoweb_scraper.utils import get_current_time_str
 
 app = typer.Typer()
-
-
-@task
-def setup():
-    # setup logger
-    logger = get_run_logger()
-    today_date = datetime.datetime.today()
-    date_time = today_date.strftime("%Y-%m-%d-%H:%M:%S")
-    logger.info(f"Scraping started at {date_time}")
-    # setup database
-    path2db = "var/db/properties.sqlite"
-    db_conn = DBConnection(path2db=path2db)
-    logger.debug("sqlite database connection setup.")
-    return db_conn, logger
 
 
 @task
@@ -38,11 +25,10 @@ def get_postal_codes(initial_index) -> tuple[list[str], int]:
 
 
 @task
-def add_to_db(
-    rent_df: pd.DataFrame, sale_df: pd.DataFrame, db_conn, today_date: datetime.datetime
-):
+def add_to_db(rent_df: pd.DataFrame, sale_df: pd.DataFrame, db_conn, today_date: str):
     # add today date to both dataframes
-    today = today_date.strftime("%Y-%m-%d")
+    current_time_dt = datetime.strptime(today_date, "%Y-%m-%d-%H:%M:%S")
+    today = current_time_dt.strftime("%Y-%m-%d")
     rent_df.loc[:, "collection_date"] = today
     sale_df.loc[:, "collection_date"] = today
     rental_properties = [
@@ -56,7 +42,13 @@ def add_to_db(
 
 @flow(name="Immoweb Scraper")
 def scrape_immoweb_flow():
-    db_conn, logger = setup()
+    logger = get_run_logger()
+    date_time = get_current_time_str()
+    logger.info(f"Scraping started at {date_time}")
+    # setup database
+    path2db = "var/db/properties.sqlite"
+    db_conn = DBConnection(path2db=path2db)
+    logger.debug("sqlite database connection setup.")
     logger.debug("Initialize batcher to get state where we left off")
     batch_state = BatchStateHandler(db_conn)
     initial_index = batch_state.load_state()
@@ -72,11 +64,10 @@ def scrape_immoweb_flow():
         breakpoint()
         sale_df = scrape(builder.for_sale)
         logger.info("Scraping completed")
-        today_date = datetime.datetime.today()
-        date_time = today_date.strftime("%Y-%m-%d-%H:%M:%S")
+        date_time = get_current_time_str()
         logger.info("Adding to sqlite")
         # Adding properties to database
-        add_to_db(rent_df, sale_df, db_conn, today_date)
+        add_to_db(rent_df, sale_df, db_conn, date_time)
         logger.info("Properties added to tables")
         success_flag = True
     except Exception as e:
@@ -85,7 +76,8 @@ def scrape_immoweb_flow():
         # Add the current index to the batch_state
         batch_state.save_state(new_index)
     db_conn.close()
-    logger.info(f"Script finished at {date_time}")
+    finish_time = get_current_time_str()
+    logger.info(f"Script finished at {finish_time}")
 
 
 @app.command()
