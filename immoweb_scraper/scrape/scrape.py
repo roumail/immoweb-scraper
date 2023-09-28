@@ -6,6 +6,7 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from loguru import logger
+from prefect import task
 
 
 def parse_card_element(card):
@@ -60,6 +61,7 @@ def parse_card_element(card):
     return out
 
 
+@task
 def scrape(url_builder_method: tp.Callable[[str], str]) -> pd.DataFrame:
     collection = []
     max_pages = 99
@@ -72,19 +74,11 @@ def scrape(url_builder_method: tp.Callable[[str], str]) -> pd.DataFrame:
             "div", {"class": "results"}
         )
         cards = main_div.find_all("iw-search-card-rendered")
+        if not cards:
+            logger.info(f"No more results found on page {page_i}")
+            break
         for card in cards:
             parsed = parse_card_element(card)
             collection.append(parsed)
-        # # Handle the clicking of privacy if needed
-        # click_accept_banner(browser, url)
-        # if page_i == 2:
-        #     break
-        # try:
-        #     _info = retrieve_page_links(browser)
-        #     collection.extend(_info)
-        #     # preparation for next page..
-        # except NoSuchElementException:
-        #     logger.info(f"Stopped at page {page_i}")
-        #     break
     df = pd.concat(collection, axis="columns").T
     return df
