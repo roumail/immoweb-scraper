@@ -1,3 +1,5 @@
+import pytest
+
 from immoweb_scraper.batcher.PostalCodeBatcher import PostalCodeBatcher
 
 brussels_postal_codes = {
@@ -23,26 +25,39 @@ batcher_test_dict = [
     flemish_brabant_leuven,
 ]
 
-batch_size = 2
 
-
-def test_get_next_batch():
-    # Expected results
-    expected_batches = [
-        ["1000", "1030"],
-        ["1040", "1790"],
-        ["1652", "1730"],
-        ["3200", "3460"],
-        ["3130", "1000"],
-    ]
-
+@pytest.mark.parametrize(
+    "batch_size,expected_batches",
+    [
+        (
+            2,
+            [
+                ["1000", "1030"],
+                ["1040", "1790"],
+                ["1652", "1730"],
+                ["3200", "3460"],
+                ["3130", "1000"],
+            ],
+        ),
+        (
+            5,
+            [
+                ["1000", "1030", "1040", "1790", "1652"],
+                ["1730", "3200", "3460", "3130", "1000"],
+                ["1030", "1040", "1790", "1652", "1730"],
+                ["3200", "3460", "3130", "1000", "1030"],
+                ["1040", "1790", "1652", "1730", "3200"],
+            ],
+        ),
+    ],
+)
+def test_get_next_batch(batch_size, expected_batches):
     batcher = PostalCodeBatcher(
-        initial_index=0, batch_size=2, dictionaries=batcher_test_dict
+        initial_index=0, batch_size=batch_size, dictionaries=batcher_test_dict
     )
     # Call get_next_batch and verify the output
     for i, expected_batch in enumerate(expected_batches):
         if i > len(expected_batches):
             break
         batches = batcher.get_next_batch()
-        print(i, batches)
         assert batches == expected_batch
