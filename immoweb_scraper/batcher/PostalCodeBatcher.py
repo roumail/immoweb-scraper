@@ -1,5 +1,5 @@
 import typing as tp
-from itertools import chain
+from itertools import chain, islice
 
 
 class PostalCodeBatcher:
@@ -26,14 +26,19 @@ class PostalCodeBatcher:
             self.dictionaries = dictionaries
         # Compute the length of all_postal_codes
         self.total_postal_codes = sum(len(d) for d in self.dictionaries)
-        self.postal_codes_gen = None  # Initialize the generator as None
+        self._postal_codes_gen = None  # Initialize the generator as None
         self.batch_size = batch_size
         self.current_code_index = initial_index
 
-    def get_all_postal_codes(self):
-        if self.postal_codes_gen is None:
-            self.postal_codes_gen = self._create_postal_codes_gen()
-        return self.postal_codes_gen
+    @property
+    def postal_codes_gen(self):
+        if self._postal_codes_gen is None:
+            self._postal_codes_gen = self._create_postal_codes_gen()
+        return self._postal_codes_gen
+
+    @postal_codes_gen.setter
+    def postal_codes_gen(self, value):
+        self._postal_codes_gen = value
 
     def _create_postal_codes_gen(self):
         return chain.from_iterable(
@@ -43,42 +48,35 @@ class PostalCodeBatcher:
             )
         )
 
-    def postal_code_iterator(self):
-        current_index = self.current_code_index
-        postal_codes_gen = self.get_all_postal_codes()
+    def batch_generator(self) -> tuple[int, list[int]]:
+        index = self.current_code_index
+
         while True:
-            try:
-                code = next(postal_codes_gen)
-                yield code
-                current_index += 1
-                if current_index >= self.total_postal_codes:
-                    current_index = 0
-            except StopIteration:
-                self.postal_codes_gen = None  # Reset the generator
-                break
-        self.current_code_index = current_index
+            end_index = index + self.batch_size
 
-    def postal_code_batches(self):
-        code_iter = self.postal_code_iterator()
-        current_batch = []
-        batches_yielded = 0
+            # Handle wrap-around case
+            if end_index > self.total_postal_codes:
+                remaining = list(
+                    islice(self.postal_codes_gen, index, self.total_postal_codes + 1)
+                )
+                index = end_index - self.total_postal_codes
+                from_start = list(islice(self.postal_codes_gen, 0, index))
+                batch = remaining + from_start
+                self.postal_codes_gen = (
+                    self._create_postal_codes_gen()
+                )  # Reset the generator
+            else:
+                # Normal case: No wrap-around
+                batch = list(islice(self.postal_codes_gen, index, end_index))
+                index += 1
 
-        for code in code_iter:
-            current_batch.append(code)
-
-            if len(current_batch) == self.batch_size:
-                # Increment the current_code_index by batch size
-                self.current_code_index += self.batch_size
-                yield current_batch
-                current_batch = []
-                batches_yielded += 1
-
-                # Termination condition: If we've yielded all batches, break the loop
-                if batches_yielded * self.batch_size >= self.total_postal_codes:
-                    break
+            yield (index, batch)
 
     def get_current_index(self):
         return self.current_code_index
 
-    def get_next_batch(self) -> list[str]:
-        return list(map(str, next(self.postal_code_batches())))
+    def get_next_batch(self) -> tuple[int, list[str]]:
+        next_index, batches = next(self.batch_generator())
+        batches = list(map(str, batches))
+        self.current_code_index = next_index
+        return next_index, batches
