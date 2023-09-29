@@ -59,24 +59,21 @@ class PostalCodeBatcher:
                 remaining = list(
                     islice(self.postal_codes_gen, index, self.total_postal_codes + 1)
                 )
+                # Reset the generator before calling from start
+                self.postal_codes_gen = self._create_postal_codes_gen()
                 index = end_index - self.total_postal_codes
                 from_start = list(islice(self.postal_codes_gen, 0, index))
                 batch = remaining + from_start
-                self.postal_codes_gen = (
-                    self._create_postal_codes_gen()
-                )  # Reset the generator
             else:
                 # Normal case: No wrap-around
                 batch = list(islice(self.postal_codes_gen, index, end_index))
                 index += 1
 
-            yield (index, batch)
+            self.current_code_index = index
+            yield batch
 
     def get_current_index(self):
         return self.current_code_index
 
-    def get_next_batch(self) -> tuple[int, list[str]]:
-        next_index, batches = next(self.batch_generator())
-        batches = list(map(str, batches))
-        self.current_code_index = next_index
-        return next_index, batches
+    def get_next_batch(self) -> list[str]:
+        return list(map(str, next(self.batch_generator())))
