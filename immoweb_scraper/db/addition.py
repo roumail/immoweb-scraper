@@ -1,7 +1,7 @@
 import typing as tp
 from collections import Counter
 
-from prefect import get_run_logger, task
+from prefect import get_run_logger
 
 from immoweb_scraper.db.models import Base, PurchasePropertyTable, RentalPropertyTable
 
@@ -10,7 +10,6 @@ if tp.TYPE_CHECKING:
     from immoweb_scraper.models import PurchaseProperty, RentalProperty
 
 
-@task
 def insert_properties(
     db_conn: "DBConnection",
     properties: list[tp.Union["PurchaseProperty", "RentalProperty"]],
@@ -64,7 +63,6 @@ def get_all_purchase_properties(db_conn: "DBConnection"):
         return session.query(PurchasePropertyTable).all()
 
 
-@task
 def add_properties(
     db_conn: "DBConnection",
     rental_properties: list["RentalProperty"],
