@@ -26,14 +26,12 @@ class PostalCodeBatcher:
             self.dictionaries = dictionaries
         # Compute the length of all_postal_codes
         self.total_postal_codes = sum(len(d) for d in self.dictionaries)
-        self._postal_codes_gen = None  # Initialize the generator as None
+        self._postal_codes_gen = self._create_postal_codes_gen()
         self.batch_size = batch_size
         self.current_code_index = initial_index
 
     @property
     def postal_codes_gen(self):
-        if self._postal_codes_gen is None:
-            self._postal_codes_gen = self._create_postal_codes_gen()
         return self._postal_codes_gen
 
     @postal_codes_gen.setter
@@ -48,7 +46,7 @@ class PostalCodeBatcher:
             )
         )
 
-    def batch_generator(self) -> tuple[int, list[int]]:
+    def batch_generator(self) -> list[int]:
         index = self.current_code_index
 
         while True:
@@ -62,12 +60,14 @@ class PostalCodeBatcher:
                 # Reset the generator before calling from start
                 self.postal_codes_gen = self._create_postal_codes_gen()
                 index = end_index - self.total_postal_codes
+                print(f"wrapped case: 0 {index}")
                 from_start = list(islice(self.postal_codes_gen, 0, index))
                 batch = remaining + from_start
             else:
                 # Normal case: No wrap-around
+                print(f"normal case: {index}, {end_index}")
                 batch = list(islice(self.postal_codes_gen, index, end_index))
-                index += 1
+                index = end_index
 
             self.current_code_index = index
             yield batch
