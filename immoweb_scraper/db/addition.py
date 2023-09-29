@@ -1,7 +1,7 @@
 import typing as tp
 from collections import Counter
 
-from loguru import logger
+from prefect import get_run_logger, task
 
 from immoweb_scraper.db.models import Base, PurchasePropertyTable, RentalPropertyTable
 
@@ -10,11 +10,13 @@ if tp.TYPE_CHECKING:
     from immoweb_scraper.models import PurchaseProperty, RentalProperty
 
 
+@task
 def insert_properties(
     db_conn: "DBConnection",
     properties: list[tp.Union["PurchaseProperty", "RentalProperty"]],
     table_class: tp.Type[Base],
 ):
+    logger = get_run_logger()
     # 1. Filter out duplicates in the properties list
     identifiers_list = [item.immoweb_identifier for item in properties]
     identifier_counts = Counter(identifiers_list)
@@ -62,11 +64,13 @@ def get_all_purchase_properties(db_conn: "DBConnection"):
         return session.query(PurchasePropertyTable).all()
 
 
+@task
 def add_properties(
     db_conn: "DBConnection",
     rental_properties: list["RentalProperty"],
     purchase_properties: list["PurchaseProperty"],
 ):
+    logger = get_run_logger()
     logger.info("Adding rental properties to database")
     rental_properties_added = insert_properties(
         db_conn, rental_properties, RentalPropertyTable
@@ -83,6 +87,8 @@ def add_properties(
         f"Added {len(purchase_properties_added)} purchase properties to the database."
     )
 
-    logger.info(
-        f"Total new properties: {len(purchase_properties_added) + len(rental_properties_added)}."
-    )
+    total_rentals = len(get_all_rental_properties(db_conn))
+    total_purchase = len(get_all_purchase_properties(db_conn))
+
+    logger.info(f"Total rental properties in DB: {total_rentals}.")
+    logger.info(f"Total purchase properties in DB: {total_purchase}.")
