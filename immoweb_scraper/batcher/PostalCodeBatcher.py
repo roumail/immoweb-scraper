@@ -26,17 +26,8 @@ class PostalCodeBatcher:
             self.dictionaries = dictionaries
         # Compute the length of all_postal_codes
         self.total_postal_codes = sum(len(d) for d in self.dictionaries)
-        self._postal_codes_gen = self._create_postal_codes_gen()
         self.batch_size = batch_size
         self.current_code_index = initial_index
-
-    @property
-    def postal_codes_gen(self):
-        return self._postal_codes_gen
-
-    @postal_codes_gen.setter
-    def postal_codes_gen(self, value):
-        self._postal_codes_gen = value
 
     def _create_postal_codes_gen(self):
         return chain.from_iterable(
@@ -46,34 +37,29 @@ class PostalCodeBatcher:
             )
         )
 
-    def batch_generator(self) -> list[int]:
-        index = self.current_code_index
-
+    def postal_code_batches_generator(self) -> list[int]:
         while True:
-            end_index = index + self.batch_size
-
-            # Handle wrap-around case
+            end_index = self.current_code_index + self.batch_size
+            # Create a new generator starting from the current index
+            new_gen = islice(
+                self._create_postal_codes_gen(), self.current_code_index, end_index
+            )
+            batch = list(new_gen)
             if end_index > self.total_postal_codes:
-                remaining = list(
-                    islice(self.postal_codes_gen, index, self.total_postal_codes + 1)
+                remaining_count = self.total_postal_codes - self.current_code_index
+                wrap_around_count = self.batch_size - remaining_count
+                wrap_around_gen = islice(
+                    self._create_postal_codes_gen(), wrap_around_count
                 )
-                # Reset the generator before calling from start
-                self.postal_codes_gen = self._create_postal_codes_gen()
-                index = end_index - self.total_postal_codes
-                print(f"wrapped case: 0 {index}")
-                from_start = list(islice(self.postal_codes_gen, 0, index))
-                batch = remaining + from_start
-            else:
-                # Normal case: No wrap-around
-                print(f"normal case: {index}, {end_index}")
-                batch = list(islice(self.postal_codes_gen, index, end_index))
-                index = end_index
+                batch += list(wrap_around_gen)
+                self.current_code_index = wrap_around_count
 
-            self.current_code_index = index
+            else:
+                self.current_code_index = end_index
             yield batch
 
     def get_current_index(self):
         return self.current_code_index
 
     def get_next_batch(self) -> list[str]:
-        return list(map(str, next(self.batch_generator())))
+        return list(map(str, next(self.postal_code_batches_generator())))

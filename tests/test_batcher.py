@@ -1,6 +1,3 @@
-import pytest
-
-from immoweb_scraper.batcher.BatchStateHandler import BatchStateHandler
 from immoweb_scraper.batcher.PostalCodeBatcher import PostalCodeBatcher
 
 brussels_postal_codes = {
@@ -29,30 +26,7 @@ batcher_test_dict = [
 batch_size = 2
 
 
-@pytest.fixture
-def mock_db_connection(mocker):
-    # Create a mock DBConnection instance
-    mock_conn = mocker.MagicMock()
-
-    # Mock the session_scope method to yield a mock session
-    mock_session = mocker.MagicMock()
-    mock_session.query.return_value.first.return_value = (
-        None  # Simulate no existing state in the database
-    )
-    mock_conn.session_scope.return_value.__enter__.return_value = mock_session
-
-    return mock_conn
-
-
-@pytest.fixture
-def batcher(mock_db_connection) -> PostalCodeBatcher:
-    state_handler = BatchStateHandler(mock_db_connection)
-    return PostalCodeBatcher(
-        state_handler, batch_size=2, dictionaries=batcher_test_dict
-    )
-
-
-def test_get_next_batch(batcher: PostalCodeBatcher):
+def test_get_next_batch():
     # Expected results
     expected_batches = [
         ["1000", "1030"],
@@ -62,9 +36,13 @@ def test_get_next_batch(batcher: PostalCodeBatcher):
         ["3130", "1000"],
     ]
 
+    batcher = PostalCodeBatcher(
+        initial_index=0, batch_size=2, dictionaries=batcher_test_dict
+    )
     # Call get_next_batch and verify the output
     for i, expected_batch in enumerate(expected_batches):
         if i > len(expected_batches):
             break
         batches = batcher.get_next_batch()
+        print(i, batches)
         assert batches == expected_batch
