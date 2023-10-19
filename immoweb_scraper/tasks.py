@@ -9,7 +9,7 @@ from loguru import logger
 from immoweb_scraper.batcher.PostalCodeBatcher import PostalCodeBatcher
 from immoweb_scraper.db.addition import add_properties
 from immoweb_scraper.models import PurchaseProperty, RentalProperty, to_property
-from immoweb_scraper.scrape.scrape import parse_card_element
+from immoweb_scraper.parse import parse_card_element
 
 
 # TODO: This is a continuously running task

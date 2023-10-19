@@ -1,7 +1,7 @@
 import typing as tp
 from collections import Counter
 
-from prefect import get_run_logger
+from loguru import logger
 
 from immoweb_scraper.db.models import Base, PurchasePropertyTable, RentalPropertyTable
 
@@ -15,7 +15,6 @@ def insert_properties(
     properties: list[tp.Union["PurchaseProperty", "RentalProperty"]],
     table_class: tp.Type[Base],
 ):
-    logger = get_run_logger()
     # 1. Filter out duplicates in the properties list
     identifiers_list = [item.immoweb_identifier for item in properties]
     identifier_counts = Counter(identifiers_list)
@@ -68,7 +67,6 @@ def add_properties(
     rental_properties: list["RentalProperty"],
     purchase_properties: list["PurchaseProperty"],
 ):
-    logger = get_run_logger()
     logger.info("Adding rental properties to database")
     rental_properties_added = insert_properties(
         db_conn, rental_properties, RentalPropertyTable
