@@ -1,13 +1,8 @@
 import json
 import re
-import typing as tp
 
 import pandas as pd
-import requests
-from bs4 import BeautifulSoup
 from bs4.element import Tag
-from loguru import logger
-from prefect import task
 
 
 def parse_card_element(card: Tag) -> pd.Series:
@@ -60,26 +55,3 @@ def parse_card_element(card: Tag) -> pd.Series:
         "space": space,
     }
     return pd.Series(out)
-
-
-@task
-def scrape(url_builder_method: tp.Callable[[str], str]) -> pd.DataFrame:
-    collection = []
-    max_pages = 99
-    for page_i in range(1, max_pages + 1):
-        logger.debug(f"Scraping page number {page_i}")
-        url = url_builder_method(page=str(page_i))
-        response = requests.get(url)
-        soup = BeautifulSoup(response.content, "html.parser")
-        main_div = soup.find("div", {"class": "container-main-content"}).find(
-            "div", {"class": "results"}
-        )
-        cards = main_div.find_all("iw-search-card-rendered")
-        if not cards:
-            logger.info(f"No more results found on page {page_i}")
-            break
-        for card in cards:
-            parsed = parse_card_element(card)
-            collection.append(parsed)
-    df = pd.concat(collection, axis="columns").T
-    return df

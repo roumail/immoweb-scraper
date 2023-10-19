@@ -3,8 +3,8 @@ from loguru import logger
 
 from immoweb_scraper.batcher.BatchStateHandler import BatchStateHandler
 from immoweb_scraper.db.DBConnection import DBConnection
-from immoweb_scraper.scrape.url import ImmoWebURLBuilder
 from immoweb_scraper.tasks import add_to_db, get_postal_codes, scrape
+from immoweb_scraper.url import ImmoWebURLBuilder
 from immoweb_scraper.utils import get_current_time_str
 
 app = typer.Typer()
