@@ -1,19 +1,17 @@
 import typer
-from prefect import flow, get_run_logger
+from loguru import logger
 
 from immoweb_scraper.batcher.BatchStateHandler import BatchStateHandler
 from immoweb_scraper.db.DBConnection import DBConnection
-from immoweb_scraper.scrape.scrape import scrape
 from immoweb_scraper.scrape.url import ImmoWebURLBuilder
-from immoweb_scraper.tasks import add_to_db, get_postal_codes
+from immoweb_scraper.tasks import add_to_db, get_postal_codes, scrape
 from immoweb_scraper.utils import get_current_time_str
 
 app = typer.Typer()
 
 
-@flow(name="Immoweb Scraper")
-def scrape_immoweb_flow():
-    logger = get_run_logger()
+@app.command()
+def scrape_immoweb():
     date_time = get_current_time_str()
     logger.info(f"Scraping started at {date_time}")
     # setup database
@@ -44,19 +42,13 @@ def scrape_immoweb_flow():
         success_flag = True
     except Exception as e:
         logger.error(f"An error occurred: {e}")
+        raise e
     if success_flag:
         # Add the current index to the batch_state
         batch_state.save_state(new_index)
     db_conn.close()
     finish_time = get_current_time_str()
     logger.info(f"Script finished at {finish_time}")
-
-
-@app.command()
-def run_flow():
-    """Run the scraping flow."""
-    # Execute the flow
-    scrape_immoweb_flow()
 
 
 if __name__ == "__main__":
