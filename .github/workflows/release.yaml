@@ -1,0 +1,34 @@
+name: Releases
+
+on:
+  push:
+    tags:
+    - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+
+    - name: Install Poetry
+      run: pip install poetry
+
+    - name: Build Package
+      run: poetry build
+
+    - name: Create Release
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "dist/*.tar.gz"
+        bodyFile: "body.md"
+        token: ${{ secrets.GH_TOKEN }}
