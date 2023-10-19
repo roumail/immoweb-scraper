@@ -1,3 +1,16 @@
+# Created using 
+# https://docs.prefect.io/2.13.7/concepts/deployments-block-based/
+# recommended to use this api instead
+# https://docs.prefect.io/2.13.7/concepts/deployments/
+# recommended to use work pools --> https://docs.prefect.io/2.13.7/guides/prefect-deploy/
+# This introduces the use of prefect init with recipe's
+# Two ways to deploy: https://docs.prefect.io/2.13.7/concepts/deployments/#two-approaches-to-deployments
+# the first approach with a long running process is more straightforward, the second, link below is recommended 
+# https://docs.prefect.io/2.13.7/concepts/work-pools/
+# created this file using: 
+# adapted in the UI
+# prefect deployment build immoweb_scraper/main.py:scrape_immoweb_flow --name my-first-deployment
+
 ###
 ### A complete description of a Prefect Deployment for flow 'Immoweb Scraper'
 ###

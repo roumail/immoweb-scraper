@@ -1,7 +1,8 @@
 # Welcome to your prefect.yaml file! You can use this file for storing and managing
 # configuration for deploying your flows. We recommend committing this file to source
 # control along with your flow code.
-
+# See below for details
+# https://docs.prefect.io/2.13.7/guides/prefect-deploy/#managing-deployments
 # Generic metadata about this project
 name: immoweb-scraper
 prefect-version: 2.13.2
